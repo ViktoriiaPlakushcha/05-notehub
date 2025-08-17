@@ -1,14 +1,8 @@
 import { useState, useEffect } from "react";
 import css from "./App.module.css";
 import { useDebouncedCallback } from "use-debounce";
-import { type NewNote } from "../../types/note";
-import {
-  useQuery,
-  keepPreviousData,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { fetchNotes, deleteNote, createNote } from "../../services/noteService";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { fetchNotes } from "../../services/noteService";
 import NoteList from "../NoteList/NoteList";
 import SearchBox from "../SearchBox/SearchBox";
 import Pagination from "../Pagination/Pagination";
@@ -18,7 +12,6 @@ import Loader from "../Loader/Loader";
 import Message from "../Message/Message";
 
 function App() {
-  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -52,34 +45,6 @@ function App() {
       showMessage("Oops, something went wrong! Try again later.", "error");
     }
   }, [isError]);
-
-  const mutation = useMutation({
-    mutationFn: (id: string) => deleteNote(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["notes"],
-      });
-      showMessage("Note deleted", "success");
-    },
-    onError: (error) => {
-      showMessage(`Failed to delete note.${error.message}`, "error");
-    },
-  });
-  const mutationCreate = useMutation({
-    mutationFn: (newNote: NewNote) => createNote(newNote),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["notes"],
-      });
-      showMessage("Note successfully created!", "success");
-    },
-    onError: (error) => {
-      showMessage(
-        `Failed to create note. Please try again. ${error.message}`,
-        "error"
-      );
-    },
-  });
 
   const handleOpen = () => {
     setIsModalOpen(true);
@@ -115,16 +80,10 @@ function App() {
         {message && (
           <Message messageToShow={message.text} type={message.type} />
         )}
-        <NoteList
-          notes={data?.notes ?? []}
-          onDelete={(noteId: string) => mutation.mutate(noteId)}
-        />
+        <NoteList notes={data?.notes ?? []} showMessage={showMessage} />
         {isModalOpen && (
           <Modal onClose={handleClose}>
-            <NoteForm
-              onClose={handleClose}
-              onCreate={(newToDo: NewNote) => mutationCreate.mutate(newToDo)}
-            />
+            <NoteForm onClose={handleClose} showMessage={showMessage} />
           </Modal>
         )}
       </div>
