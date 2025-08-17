@@ -11,14 +11,14 @@ interface FetchNotesProps {
     
 }
 
-interface FetchNotesResp {
+interface FetchNotesResponse {
     notes: Note[],
     totalPages: number,
 }
 
 
-async function fetchNotes({ query, currentPage, tag}: FetchNotesProps): Promise<FetchNotesResp> {
-    const response = await axios.get<FetchNotesResp>('https://notehub-public.goit.study/api/notes?', {
+async function fetchNotes({ query, currentPage, tag}: FetchNotesProps): Promise<FetchNotesResponse> {
+    const response = await axios.get<FetchNotesResponse>('https://notehub-public.goit.study/api/notes', {
         params: {
             search: query,
             tag: tag,
@@ -32,7 +32,7 @@ async function fetchNotes({ query, currentPage, tag}: FetchNotesProps): Promise<
     return response.data;
 }
 
-async function deleteNote(id: string) {
+async function deleteNote(id: string): Promise<Note> {
     const deleteResponse = await axios.delete(`https://notehub-public.goit.study/api/notes/${id}`, {
         headers: {
             Authorization: `Bearer ${myKey}`
@@ -41,7 +41,7 @@ async function deleteNote(id: string) {
     return deleteResponse.data;
 }
 
-async function createNote(newNote: NewNote) {
+async function createNote(newNote: NewNote): Promise<Note> {
     const createResponse = await axios.post('https://notehub-public.goit.study/api/notes', newNote, {
         headers: {
             Authorization: `Bearer ${myKey}`
